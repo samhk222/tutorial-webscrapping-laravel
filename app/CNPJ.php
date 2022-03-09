@@ -8,6 +8,7 @@ class CNPJ extends Model
 {
     protected $table = 'cnpjs';
 
-    public $timestamps = false;
+    protected $fillable = ['cnpj, status'];
 
+    public $timestamps = false;
 }

@@ -13,4 +13,7 @@
 
 use App\Http\Controllers\GoutteController;
 
-Route::get('/', [GoutteController::class, 'doWebScraping']);
+Route::get('/web-scraping', [GoutteController::class, 'doWebScraping'])->name('webscraping');
+Route::get('/', function(){
+    return view('welcome');
+});
