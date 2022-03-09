@@ -11,29 +11,30 @@ class GoutteController extends Controller
 {
     public function doWebScraping()
     {
-        // Cria o cliente do goutte
+        $increment = 1000;
+        // Fazendo por linhas
+        $start = 40000;
+        $end = 59000;
+
+//        for ($i = $start; $i <= $end; $i += $increment) {
+//            dump(\str_pad($i, 7, 0, \STR_PAD_LEFT));
+//        }
+
         $goutteClient = new Client();
-
-        // Cria o cliente do Guzzle
-        $guzzleClient = new GuzzleClient(['timeout' => 3,]);
-
-        // Informa ao cliente do goutte que utilizaremos o guzzle
+        $guzzleClient = new GuzzleClient(['timeout' => 2,]);
         $goutteClient->setClient($guzzleClient);
 
-        // Define a url a qual iremos fazer o scraping
-        $url = "http://cnpj.info/1110000";
-
-        // Seta o filtro que iremos buscar na página
-        $cnpj_filter = '#content > ul > li > a:nth-child(1)';
-        $crawler = $goutteClient->request('GET', $url);
-
-        // Pega o dado, e salva o mesmo
-        $crawler->filter($cnpj_filter)->each(function ($node) {
-            $cnpj = new CNPJ;
-            $cnpj->cnpj = $node->text();
-            $cnpj->save();
-        });
-
-        \sleep(4);
+        for ($i = $start; $i <= $end; $i += $increment) {
+            $url = \sprintf("http://cnpj.info/%s", \str_pad($i, 7, 0, \STR_PAD_LEFT));
+            $crawler = $goutteClient->request('GET', $url);
+            dump($url);
+            $crawler->filter('#content > ul > li > a:nth-child(1)')->each(function ($node) {
+                $cnpj = new CNPJ;
+                $cnpj->cnpj = $node->text();
+                $cnpj->save();
+//                dump($cnpj, $node->text());
+            });
+            \sleep(4);
+        }
     }
 }
