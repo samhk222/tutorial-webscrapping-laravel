@@ -11,30 +11,39 @@ class GoutteController extends Controller
 {
     public function doWebScraping()
     {
-        $increment = 1000;
-        // Fazendo por linhas
-        $start = 40000;
-        $end = 59000;
+        $config = \App\Configs::all()->first();
 
-//        for ($i = $start; $i <= $end; $i += $increment) {
-//            dump(\str_pad($i, 7, 0, \STR_PAD_LEFT));
-//        }
+        $increment = $config->increment;
+        // Fazendo por linhas
+        $start = $config->start;
+        $end = $start + $config->step;
 
         $goutteClient = new Client();
         $guzzleClient = new GuzzleClient(['timeout' => 2,]);
         $goutteClient->setClient($guzzleClient);
 
         for ($i = $start; $i <= $end; $i += $increment) {
-            $url = \sprintf("http://cnpj.info/%s", \str_pad($i, 7, 0, \STR_PAD_LEFT));
+            $current_url_param = \str_pad($i, 7, 0, \STR_PAD_LEFT);
+            $url = \sprintf("http://cnpj.info/%s", $current_url_param);
             $crawler = $goutteClient->request('GET', $url);
-            dump($url);
-            $crawler->filter('#content > ul > li > a:nth-child(1)')->each(function ($node) {
+            $crawler->filter('#content > ul > li > a:nth-child(1)')->each(function ($node) use (
+                $start,
+                $end,
+                $current_url_param
+            ) {
                 $cnpj = new CNPJ;
                 $cnpj->cnpj = $node->text();
                 $cnpj->save();
-//                dump($cnpj, $node->text());
+                info('lendo agora', [$node->text(), 'start' => $start, 'end' => $end, 'current' => $current_url_param]);
             });
             \sleep(4);
         }
+
+        info("Dados pós processamento",
+            ['start' => $start, 'end' => $end, 'increment' => $increment, 'config' => $config->toArray()]);
+
+        $config->update([
+            'start' => $end
+        ]);
     }
 }
