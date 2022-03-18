@@ -14,6 +14,9 @@
 use App\Http\Controllers\GoutteController;
 
 Route::get('/web-scraping', [GoutteController::class, 'doWebScraping'])->name('webscraping');
-Route::get('/', function(){
-    return view('welcome');
+Route::get('/', function () {
+    return view('welcome', [
+        'total_registros' => \App\CNPJ::all()->count(),
+        'config' => \App\Configs::all()->first(),
+    ]);
 });
